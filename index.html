@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Workouts">
+<meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0b1120" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<title>Workouts</title>
+<style>
+:root{
+  --bg:#f4f5f7; --card:#fff; --text:#111827; --muted:#6b7280; --line:#e5e7eb;
+  --accent:#2563eb; --chip:#eaeef4; --danger:#dc2626; --field:#f8fafc;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#0b1120; --card:#151c2c; --text:#e5e7eb; --muted:#94a3b8; --line:#26324a;
+         --accent:#3b82f6; --chip:#1e293b; --danger:#f87171; --field:#0f1626; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif}
+body{padding:calc(env(safe-area-inset-top) + 8px) 16px calc(env(safe-area-inset-bottom) + 90px);
+  max-width:560px;margin:0 auto}
+h1{font-size:30px;margin:10px 4px 14px;letter-spacing:-.02em}
+.card{background:var(--card);border-radius:16px;padding:16px;margin-bottom:12px}
+.card h2{font-size:17px;margin:0 0 4px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{flex:none;border:0;border-radius:999px;padding:8px 14px;background:var(--chip);color:var(--text);
+  font:inherit;font-size:15px}
+.chip.on{background:var(--accent);color:#fff}
+.chip:disabled:not(.on){opacity:.4}
+label,.lbl{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:16px 0 6px;
+  text-transform:uppercase;letter-spacing:.05em}
+input{width:100%;font:inherit;font-size:17px;padding:10px 12px;border:1px solid var(--line);
+  border-radius:10px;background:var(--field);color:var(--text);min-height:44px}
+input[type=date]{-webkit-appearance:none;appearance:none;text-align:left}
+.set-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.set-row .n{width:48px;color:var(--muted);font-size:15px;flex:none}
+.set-row input{flex:1}
+.x{border:0;background:none;color:var(--muted);font-size:24px;width:36px;height:36px;flex:none;padding:0}
+.x.blank{visibility:hidden}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.time{display:flex;align-items:center;gap:6px}
+.time span{color:var(--muted)}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font:inherit;font-weight:600;
+  font-size:17px;background:var(--accent);color:#fff;margin-top:14px}
+.btn.secondary{background:var(--chip);color:var(--text);font-weight:500;margin-top:4px}
+.btn.ghost{background:none;color:var(--muted);font-weight:500;margin-top:4px}
+.btn.danger{background:none;color:var(--danger);font-weight:500;margin-top:0}
+.hint{color:var(--muted);font-size:14px;margin-top:8px}
+.total{font-weight:600;margin-top:10px}
+.warn{background:rgba(217,119,6,.12);color:inherit;border-radius:12px;padding:10px 14px;font-size:14px;margin-bottom:12px}
+.warn button{border:0;background:none;color:var(--accent);font:inherit;font-size:14px;padding:0;font-weight:600}
+.entry{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line);
+  width:100%;background:none;border-left:0;border-right:0;border-bottom:0;color:inherit;font:inherit;text-align:left}
+.list .entry:first-child{border-top:0;padding-top:4px}
+.dot{width:10px;height:10px;border-radius:50%;margin-top:7px;flex:none}
+.entry .t{font-weight:600}
+.entry .d{color:var(--muted);font-size:14px}
+.entry .note{color:var(--muted);font-size:14px;font-style:italic}
+.day-h{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;
+  margin:18px 4px 6px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--card);border-radius:14px;padding:12px 14px}
+.stat .v{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.stat .k{font-size:13px;color:var(--muted)}
+.stat .s{font-size:12px;color:var(--muted)}
+svg .cv{font-size:9px;fill:var(--muted)}
+svg .cl{font-size:10px;fill:var(--muted)}
+svg .base{stroke:var(--line)}
+.empty{color:var(--muted);text-align:center;padding:28px 8px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);
+  border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--muted);font:inherit;font-size:11px;
+  padding:8px 0 6px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button.on{color:var(--accent)}
+nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translateX(-50%);
+  background:#111827;color:#fff;padding:10px 18px;border-radius:999px;font-size:15px;opacity:0;
+  transition:opacity .2s;pointer-events:none;z-index:9;white-space:nowrap}
+.toast.show{opacity:1}
+.toast.err{background:var(--danger)}
+p{margin:6px 0}
+ol{padding-left:20px;margin:6px 0}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<div class="toast" id="toast"></div>
+<nav id="tabs">
+  <button data-tab="log"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>Log</button>
+  <button data-tab="history"><svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/></svg>History</button>
+  <button data-tab="stats"><svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/></svg>Stats</button>
+  <button data-tab="backup"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Backup</button>
+</nav>
+<script>
+const EX = {
+  pushups: {name: 'Push-ups', kind: 'reps', color: '#2563eb'},
+  pullups: {name: 'Pull-ups', kind: 'reps', color: '#7c3aed'},
+  squats:  {name: 'Squats',   kind: 'reps', color: '#059669'},
+  plank:   {name: 'Plank',    kind: 'secs', color: '#d97706'},
+  run:     {name: 'Run',      kind: 'run',  color: '#dc2626'},
+};
+const KEY = 'workouts.v1', BACKUP_KEY = 'workouts.lastBackup';
+const BACKUP_NAG_DAYS = 14;
+
+// ---------- storage ----------
+function load() {
+  try { const v = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(v) ? v.filter(valid) : []; }
+  catch { return []; }
+}
+function persist() {
+  try { localStorage.setItem(KEY, JSON.stringify(entries)); return true; }
+  catch (e) { alert('Could not save: ' + e.message); return false; }
+}
+function getLastBackup() { try { return localStorage.getItem(BACKUP_KEY); } catch { return null; } }
+function setLastBackup() { try { localStorage.setItem(BACKUP_KEY, new Date().toISOString()); } catch {} }
+function valid(e) {
+  if (!e || typeof e.id !== 'string' || !EX[e.type] || !/^\d{4}-\d{2}-\d{2}$/.test(e.date)) return false;
+  if (EX[e.type].kind === 'run') return e.distance > 0 && e.duration > 0;
+  return Array.isArray(e.sets) && e.sets.length > 0 && e.sets.every(n => Number.isInteger(n) && n > 0);
+}
+let entries = load();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => ymd(new Date());
+const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const weekStart = s => { const d = parseYmd(s); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return ymd(d); };
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const sum = a => a.reduce((x, y) => x + y, 0);
+
+function fmtDay(s) {
+  if (s === today()) return 'Today';
+  if (s === addDays(today(), -1)) return 'Yesterday';
+  const d = parseYmd(s);
+  return d.toLocaleDateString(undefined, {weekday: 'short', day: 'numeric', month: 'short',
+    year: d.getFullYear() === new Date().getFullYear() ? undefined : 'numeric'});
+}
+function fmtDur(sec) {
+  sec = Math.round(sec);
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${m}:${pad(s)}`;
+}
+const fmtSecs = s => s < 60 ? `${s}s` : fmtDur(s);
+const fmtKm = k => String(Math.round(k * 100) / 100);
+const fmtPace = (sec, km) => km > 0 ? `${fmtDur(sec / km)} /km` : '–';
+const byDateDesc = (a, b) => b.date.localeCompare(a.date) || (b.createdAt || '').localeCompare(a.createdAt || '');
+
+function total(e) { return EX[e.type].kind === 'run' ? e.distance : sum(e.sets); }
+function fmtAmount(type, v) {
+  const k = EX[type].kind;
+  return k === 'run' ? `${fmtKm(v)} km` : k === 'secs' ? fmtSecs(v) : `${v} reps`;
+}
+function summary(e) {
+  const k = EX[e.type].kind;
+  if (k === 'run') return `${fmtKm(e.distance)} km · ${fmtDur(e.duration)} · ${fmtPace(e.duration, e.distance)}`;
+  const f = k === 'secs' ? fmtSecs : String;
+  if (e.sets.length === 1) return fmtAmount(e.type, e.sets[0]);
+  return `${e.sets.length} sets · ${e.sets.map(f).join(' + ')} = ${fmtAmount(e.type, total(e))}`;
+}
+
+let toastTimer;
+function toast(msg, err) {
+  const t = $('#toast');
+  t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.className = 'toast', 2200);
+}
+
+// ---------- state ----------
+let tab = 'log', histFilter = 'all', statsType = 'pushups';
+let form = blankForm('pushups', today());
+function blankForm(type, date) { return {id: null, type, date, sets: [''], distance: '', min: '', sec: '', note: ''}; }
+
+// ---------- views ----------
+function entryRow(e, showDay) {
+  return `<button class="entry" data-act="edit" data-id="${esc(e.id)}">
+    <span class="dot" style="background:${EX[e.type].color}"></span>
+    <span><div class="t">${EX[e.type].name}${showDay ? ` <span class="d">· ${fmtDay(e.date)}</span>` : ''}</div>
+    <div class="d">${esc(summary(e))}</div>${e.note ? `<div class="note">${esc(e.note)}</div>` : ''}</span></button>`;
+}
+
+function backupNag() {
+  if (!entries.length) return '';
+  const last = getLastBackup();
+  const days = last ? Math.floor((Date.now() - Date.parse(last)) / 864e5) : null;
+  if (days !== null && days < BACKUP_NAG_DAYS) return '';
+  return `<div class="warn">${days === null ? 'No backup yet.' : `Last backup ${days} days ago.`}
+    <button data-tab="backup">Back up now</button></div>`;
+}
+
+function viewLog() {
+  const k = EX[form.type].kind;
+  const last = entries.filter(e => e.type === form.type && e.id !== form.id).sort(byDateDesc)[0];
+  let h = `<h1>${form.id ? 'Edit entry' : 'Log workout'}</h1>${form.id ? '' : backupNag()}<div class="card">
+    <label for="f-date">Date</label>
+    <input type="date" id="f-date" value="${form.date}">
+    <span class="lbl">Exercise</span>
+    <div class="chips">${Object.entries(EX).map(([id, x]) =>
+      `<button class="chip ${id === form.type ? 'on' : ''}" data-act="type" data-v="${id}" ${form.id ? 'disabled' : ''}>${x.name}</button>`).join('')}</div>
+    ${last ? `<div class="hint">Last time (${fmtDay(last.date)}): ${esc(summary(last))}</div>` : ''}`;
+
+  if (k === 'run') {
+    h += `<div class="row2">
+      <div><label for="f-dist">Distance (km)</label>
+        <input id="f-dist" type="text" inputmode="decimal" placeholder="5.0" value="${esc(form.distance)}"></div>
+      <div><span class="lbl">Time</span><div class="time">
+        <input id="f-min" type="number" inputmode="numeric" min="0" placeholder="min" value="${esc(form.min)}" aria-label="Minutes"><span>:</span>
+        <input id="f-sec" type="number" inputmode="numeric" min="0" max="59" placeholder="sec" value="${esc(form.sec)}" aria-label="Seconds"></div></div>
+    </div><div class="total" id="f-total"></div>`;
+  } else {
+    h += `<span class="lbl">${k === 'secs' ? 'Sets — seconds held' : 'Sets — reps'}</span>`;
+    form.sets.forEach((v, i) => {
+      h += `<div class="set-row"><span class="n">Set ${i + 1}</span>
+        <input type="number" inputmode="numeric" min="1" step="1" data-set="${i}" value="${esc(v)}" placeholder="${k === 'secs' ? 'seconds' : 'reps'}">
+        <button class="x ${form.sets.length > 1 ? '' : 'blank'}" data-act="delset" data-i="${i}" aria-label="Remove set">×</button></div>`;
+    });
+    h += `<button class="btn secondary" data-act="addset">+ Add set</button><div class="total" id="f-total"></div>`;
+  }
+  h += `<label for="f-note">Note (optional)</label>
+    <input id="f-note" type="text" placeholder="e.g. felt strong, wide grip" value="${esc(form.note)}">
+    <button class="btn" data-act="save">${form.id ? 'Save changes' : 'Save'}</button>
+    ${form.id ? `<button class="btn ghost" data-act="cancel">Cancel</button><button class="btn danger" data-act="delete">Delete entry</button>` : ''}
+  </div>`;
+  if (!form.id) h += `<div class="card" id="day-list"></div>`;
+  return h;
+}
+
+function dayListHtml() {
+  const list = entries.filter(e => e.date === form.date).sort(byDateDesc);
+  return `<h2>${fmtDay(form.date)}</h2>` + (list.length
+    ? `<div class="list">${list.map(e => entryRow(e)).join('')}</div>`
+    : `<div class="hint">Nothing logged for this day yet.</div>`);
+}
+
+function updateLive() {
+  const el = $('#f-total'); if (!el) return;
+  const k = EX[form.type].kind;
+  if (k === 'run') {
+    const km = parseFloat(String(form.distance).replace(',', '.'));
+    const sec = (parseInt(form.min, 10) || 0) * 60 + (parseInt(form.sec, 10) || 0);
+    el.textContent = km > 0 && sec > 0 ? `Pace ${fmtPace(sec, km)}` : '';
+  } else {
+    const sets = form.sets.map(v => parseInt(v, 10)).filter(n => n > 0);
+    el.textContent = sets.length > 1 ? `Total ${fmtAmount(form.type, sum(sets))}` : '';
+  }
+}
+
+function viewHistory() {
+  const list = entries.filter(e => histFilter === 'all' || e.type === histFilter).sort(byDateDesc);
+  let h = `<h1>History</h1><div class="chips" style="margin-bottom:6px">
+    <button class="chip ${histFilter === 'all' ? 'on' : ''}" data-act="hfilter" data-v="all">All</button>
+    ${Object.entries(EX).map(([id, x]) => `<button class="chip ${histFilter === id ? 'on' : ''}" data-act="hfilter" data-v="${id}">${x.name}</button>`).join('')}</div>`;
+  if (!list.length) return h + `<div class="empty">No entries yet.</div>`;
+  let day = null, open = false;
+  for (const e of list) {
+    if (e.date !== day) {
+      if (open) h += `</div></div>`;
+      day = e.date; open = true;
+      h += `<div class="day-h">${fmtDay(day)}</div><div class="card" style="padding:10px 16px"><div class="list">`;
+    }
+    h += entryRow(e);
+  }
+  return h + `</div></div><div class="hint" style="text-align:center">Tap an entry to edit or delete it.</div>`;
+}
+
+function stat(k, v, s) { return `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`; }
+
+function weekly(type, n) {
+  const start = weekStart(today());
+  const weeks = []; for (let i = n - 1; i >= 0; i--) weeks.push(addDays(start, -7 * i));
+  const map = Object.fromEntries(weeks.map(w => [w, 0]));
+  for (const e of entries) if (e.type === type) { const w = weekStart(e.date); if (w in map) map[w] += total(e); }
+  return weeks.map(w => ({w, v: map[w]}));
+}
+
+function chart(series, color, fmt) {
+  const W = 320, H = 170, B = 22, T = 16, bw = W / series.length;
+  const max = Math.max(1, ...series.map(s => s.v));
+  let g = `<line class="base" x1="0" x2="${W}" y1="${H - B + .5}" y2="${H - B + .5}"/>`;
+  series.forEach((s, i) => {
+    const x = i * bw, h = (H - B - T) * s.v / max, y = H - B - h;
+    if (s.v) g += `<rect x="${x + bw * .18}" y="${y}" width="${bw * .64}" height="${Math.max(h, 2)}" rx="3" fill="${color}"/>
+      <text class="cv" x="${x + bw / 2}" y="${y - 4}" text-anchor="middle">${fmt(s.v)}</text>`;
+    if (i % 3 === (series.length - 1) % 3) {
+      const d = parseYmd(s.w);
+      g += `<text class="cl" x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${d.getDate()}/${d.getMonth() + 1}</text>`;
+    }
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Weekly totals">${g}</svg>`;
+}
+
+function viewStats() {
+  const t = today(), wk = weekStart(t), lastWk = addDays(wk, -7), d30 = addDays(t, -29);
+  const daysIn = (from, to) => new Set(entries.filter(e => e.date >= from && e.date <= to).map(e => e.date)).size;
+  let h = `<h1>Stats</h1><div class="stats">
+    ${stat('Workout days this week', daysIn(wk, t))}
+    ${stat('Workout days, last 30', daysIn(d30, t))}</div>
+    <div class="chips" style="margin-bottom:12px">${Object.entries(EX).map(([id, x]) =>
+      `<button class="chip ${statsType === id ? 'on' : ''}" data-act="stype" data-v="${id}">${x.name}</button>`).join('')}</div>`;
+
+  const list = entries.filter(e => e.type === statsType);
+  if (!list.length) return h + `<div class="empty">No ${EX[statsType].name.toLowerCase()} logged yet.</div>`;
+  const k = EX[statsType].kind, A = v => fmtAmount(statsType, v);
+  const inRange = (from, to) => sum(list.filter(e => e.date >= from && e.date <= to).map(total));
+  const thisW = inRange(wk, t), prevW = inRange(lastWk, addDays(wk, -1));
+  h += `<div class="stats">${stat('This week', A(thisW), `last week ${A(prevW)}`)}${stat('Last 30 days', A(inRange(d30, t)))}`;
+
+  if (k === 'run') {
+    const longest = list.reduce((a, b) => b.distance > a.distance ? b : a);
+    const paced = list.filter(e => e.distance >= 1);
+    const fastest = paced.length ? paced.reduce((a, b) => b.duration / b.distance < a.duration / a.distance ? b : a) : null;
+    h += stat('Longest run', `${fmtKm(longest.distance)} km`, fmtDay(longest.date))
+       + stat('Fastest pace', fastest ? fmtPace(fastest.duration, fastest.distance) : '–', fastest ? `${fmtKm(fastest.distance)} km · ${fmtDay(fastest.date)}` : '')
+       + stat('Total distance', `${fmtKm(sum(list.map(e => e.distance)))} km`, `${list.length} runs`)
+       + stat('Total time', fmtDur(sum(list.map(e => e.duration))));
+  } else {
+    let best = null;
+    for (const e of list) { const m = Math.max(...e.sets); if (!best || m > best.v) best = {v: m, date: e.date}; }
+    const byDay = {}; for (const e of list) byDay[e.date] = (byDay[e.date] || 0) + total(e);
+    const bestDay = Object.entries(byDay).reduce((a, b) => b[1] > a[1] ? b : a);
+    h += stat(k === 'secs' ? 'Longest hold' : 'Best set', A(best.v), fmtDay(best.date))
+       + stat('Best day', A(bestDay[1]), fmtDay(bestDay[0]))
+       + stat('All time', A(sum(list.map(total))), `${Object.keys(byDay).length} days`)
+       + stat('Avg per session', A(Math.round(sum(list.map(total)) / list.length)));
+  }
+  const cf = k === 'run' ? v => v.toFixed(1) : k === 'secs' ? v => v >= 60 ? Math.round(v / 60) + 'm' : v + 's' : String;
+  h += `</div><div class="card"><h2>Weekly totals</h2><div class="hint" style="margin:0 0 8px">Last 12 weeks, ${k === 'run' ? 'km' : k === 'secs' ? 'time held' : 'reps'}</div>
+    ${chart(weekly(statsType, 12), EX[statsType].color, cf)}</div>`;
+  return h;
+}
+
+function viewBackup() {
+  const last = getLastBackup();
+  return `<h1>Backup</h1><div class="card"><h2>Your data</h2>
+    <p>${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} stored on this phone only.</p>
+    <p class="hint" style="margin-top:0">Last backup: ${last ? new Date(last).toLocaleString() : 'never'}</p>
+    <button class="btn" data-act="export">Export backup</button>
+    <button class="btn secondary" data-act="import">Import backup</button>
+    <p class="hint">Export saves a small file — choose “Save to Files” (iCloud Drive) or email it to yourself.
+    Import adds entries from a backup file; entries you already have are kept, nothing is overwritten.</p></div>
+    <div class="card"><h2>Install on iPhone</h2><ol>
+    <li>Open this page in <b>Safari</b>.</li>
+    <li>Tap <b>Share</b> → <b>Add to Home Screen</b>.</li>
+    <li>Always open it from that icon. The icon keeps its own data, separate from the Safari tab.</li></ol>
+    <p class="hint">Works offline once installed.</p></div>`;
+}
+
+function render() {
+  const views = {log: viewLog, history: viewHistory, stats: viewStats, backup: viewBackup};
+  $('#app').innerHTML = views[tab]();
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  if (tab === 'log') { updateLive(); const dl = $('#day-list'); if (dl) dl.innerHTML = dayListHtml(); }
+}
+
+// ---------- actions ----------
+function collect() {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(form.date)) return 'Pick a date';
+  const base = {type: form.type, date: form.date, note: form.note.trim()};
+  if (EX[form.type].kind === 'run') {
+    const distance = parseFloat(String(form.distance).replace(',', '.'));
+    const duration = (parseInt(form.min, 10) || 0) * 60 + (parseInt(form.sec, 10) || 0);
+    if (!(distance > 0)) return 'Enter the distance';
+    if (!(duration > 0)) return 'Enter the time';
+    return {...base, distance: Math.round(distance * 1000) / 1000, duration};
+  }
+  const sets = form.sets.map(v => parseInt(v, 10)).filter(n => n > 0);
+  if (!sets.length) return 'Enter at least one set';
+  return {...base, sets};
+}
+
+function save() {
+  const data = collect();
+  if (typeof data === 'string') return toast(data, true);
+  const prev = entries.filter(e => e.type === data.type && e.id !== form.id);
+  let msg = 'Saved';
+  if (prev.length) {
+    if (data.sets && Math.max(...data.sets) > Math.max(...prev.flatMap(e => e.sets)))
+      msg = EX[data.type].kind === 'secs' ? 'New longest hold! 🎉' : 'New best set! 🎉';
+    if (data.distance && data.distance > Math.max(...prev.map(e => e.distance))) msg = 'New longest run! 🎉';
+  }
+  if (form.id) {
+    const i = entries.findIndex(e => e.id === form.id);
+    entries[i] = {...entries[i], ...data, updatedAt: new Date().toISOString()};
+  } else {
+    entries.push({id: newId(), ...data, createdAt: new Date().toISOString()});
+  }
+  if (!persist()) return;
+  toast(form.id ? 'Updated' : msg);
+  form = blankForm(form.type, form.date);
+  render();
+}
+
+function edit(id) {
+  const e = entries.find(x => x.id === id); if (!e) return;
+  form = {id: e.id, type: e.type, date: e.date, note: e.note || '',
+    sets: e.sets ? e.sets.map(String) : [''],
+    distance: e.distance ? String(e.distance) : '',
+    min: e.duration ? String(Math.floor(e.duration / 60)) : '',
+    sec: e.duration ? String(e.duration % 60) : ''};
+  tab = 'log'; render(); window.scrollTo(0, 0);
+}
+
+async function exportData() {
+  const json = JSON.stringify({app: 'workout-tracker', version: 1, exported: new Date().toISOString(), entries}, null, 1);
+  const name = `workouts-${today()}.json`;
+  const file = new File([json], name, {type: 'application/json'});
+  if (navigator.canShare && navigator.canShare({files: [file]})) {
+    try { await navigator.share({files: [file]}); setLastBackup(); render(); toast('Backup exported'); return; }
+    catch (e) { if (e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(file); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  setLastBackup(); render(); toast('Backup exported');
+}
+
+async function importData(file) {
+  try {
+    const data = JSON.parse(await file.text());
+    const arr = Array.isArray(data) ? data : data && data.entries;
+    if (!Array.isArray(arr)) throw new Error('this is not a workout backup file');
+    const ids = new Set(entries.map(e => e.id));
+    let added = 0;
+    for (const e of arr) if (valid(e) && !ids.has(e.id)) { entries.push(e); ids.add(e.id); added++; }
+    if (!persist()) return;
+    render(); toast(`Imported ${added} new entr${added === 1 ? 'y' : 'ies'}`);
+  } catch (err) { alert('Import failed: ' + err.message); }
+}
+
+document.addEventListener('click', ev => {
+  const tb = ev.target.closest('[data-tab]');
+  if (tb) { tab = tb.dataset.tab; if (tab === 'log' && form.id) form = blankForm(form.type, form.date); render(); window.scrollTo(0, 0); return; }
+  const b = ev.target.closest('[data-act]'); if (!b) return;
+  const {act, v} = b.dataset;
+  if (act === 'type') { form = blankForm(v, form.date); render(); }
+  else if (act === 'addset') {
+    form.sets.push(form.sets[form.sets.length - 1] || ''); render();
+    const ins = document.querySelectorAll('[data-set]'); ins[ins.length - 1].focus();
+  }
+  else if (act === 'delset') { form.sets.splice(+b.dataset.i, 1); render(); }
+  else if (act === 'save') save();
+  else if (act === 'cancel') { form = blankForm(form.type, form.date); render(); }
+  else if (act === 'delete') {
+    if (!confirm('Delete this entry?')) return;
+    entries = entries.filter(e => e.id !== form.id);
+    if (persist()) { toast('Deleted'); form = blankForm(form.type, form.date); render(); }
+  }
+  else if (act === 'edit') edit(b.dataset.id);
+  else if (act === 'hfilter') { histFilter = v; render(); }
+  else if (act === 'stype') { statsType = v; render(); }
+  else if (act === 'export') exportData();
+  else if (act === 'import') $('#importFile').click();
+});
+
+document.addEventListener('input', ev => {
+  const t = ev.target;
+  if (t.dataset.set !== undefined) form.sets[+t.dataset.set] = t.value;
+  else if (t.id === 'f-dist') form.distance = t.value;
+  else if (t.id === 'f-min') form.min = t.value;
+  else if (t.id === 'f-sec') form.sec = t.value;
+  else if (t.id === 'f-note') form.note = t.value;
+  else if (t.id === 'f-date') {
+    if (!t.value) return;
+    form.date = t.value;
+    const dl = $('#day-list'); if (dl) dl.innerHTML = dayListHtml();
+    return;
+  } else return;
+  updateLive();
+});
+document.addEventListener('change', ev => { if (ev.target.id === 'f-date' && ev.target.value) { form.date = ev.target.value; const dl = $('#day-list'); if (dl) dl.innerHTML = dayListHtml(); } });
+$('#importFile').addEventListener('change', ev => { const f = ev.target.files[0]; if (f) importData(f); ev.target.value = ''; });
+
+render();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
