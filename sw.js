@@ -1,5 +1,5 @@
 // Serve from cache first (works offline at anchor), refresh the cache in the background.
-const CACHE = 'workouts-v1';
+const CACHE = 'workouts-v2';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
