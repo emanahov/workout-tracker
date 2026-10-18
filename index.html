@@ -106,7 +106,8 @@ const EX = {
   squats:  {name: 'Squats',   kind: 'reps', color: '#059669'},
   legraises: {name: 'Leg raises', kind: 'reps', color: '#0891b2'},
   plank:   {name: 'Plank',    kind: 'secs', color: '#d97706'},
-  run:     {name: 'Run',      kind: 'run',  color: '#dc2626'},
+  run:     {name: 'Run',      kind: 'run',  color: '#dc2626', noun: 'run'},
+  cycling: {name: 'Cycling',  kind: 'run',  color: '#db2777', noun: 'ride', speed: true},
 };
 const KEY = 'workouts.v1', BACKUP_KEY = 'workouts.lastBackup';
 const BACKUP_NAG_DAYS = 14;
@@ -157,6 +158,9 @@ function fmtDur(sec) {
 const fmtSecs = s => s < 60 ? `${s}s` : fmtDur(s);
 const fmtKm = k => String(Math.round(k * 100) / 100);
 const fmtPace = (sec, km) => km > 0 ? `${fmtDur(sec / km)} /km` : '–';
+const fmtSpeed = (sec, km) => sec > 0 ? `${(km / (sec / 3600)).toFixed(1)} km/h` : '–';
+// runs show pace (min/km), rides show speed (km/h)
+const fmtRate = (type, sec, km) => EX[type].speed ? fmtSpeed(sec, km) : fmtPace(sec, km);
 const byDateDesc = (a, b) => b.date.localeCompare(a.date) || (b.createdAt || '').localeCompare(a.createdAt || '');
 
 function total(e) { return EX[e.type].kind === 'run' ? e.distance : sum(e.sets); }
@@ -166,7 +170,7 @@ function fmtAmount(type, v) {
 }
 function summary(e) {
   const k = EX[e.type].kind;
-  if (k === 'run') return `${fmtKm(e.distance)} km · ${fmtDur(e.duration)} · ${fmtPace(e.duration, e.distance)}`;
+  if (k === 'run') return `${fmtKm(e.distance)} km · ${fmtDur(e.duration)} · ${fmtRate(e.type, e.duration, e.distance)}`;
   const f = k === 'secs' ? fmtSecs : String;
   if (e.sets.length === 1) return fmtAmount(e.type, e.sets[0]);
   return `${e.sets.length} sets · ${e.sets.map(f).join(' + ')} = ${fmtAmount(e.type, total(e))}`;
@@ -215,7 +219,7 @@ function viewLog() {
   if (k === 'run') {
     h += `<div class="row2">
       <div><label for="f-dist">Distance (km)</label>
-        <input id="f-dist" type="text" inputmode="decimal" placeholder="5.0" value="${esc(form.distance)}"></div>
+        <input id="f-dist" type="text" inputmode="decimal" placeholder="${EX[form.type].speed ? '25' : '5.0'}" value="${esc(form.distance)}"></div>
       <div><span class="lbl">Time</span><div class="time">
         <input id="f-min" type="number" inputmode="numeric" min="0" placeholder="min" value="${esc(form.min)}" aria-label="Minutes"><span>:</span>
         <input id="f-sec" type="number" inputmode="numeric" min="0" max="59" placeholder="sec" value="${esc(form.sec)}" aria-label="Seconds"></div></div>
@@ -251,7 +255,7 @@ function updateLive() {
   if (k === 'run') {
     const km = parseFloat(String(form.distance).replace(',', '.'));
     const sec = (parseInt(form.min, 10) || 0) * 60 + (parseInt(form.sec, 10) || 0);
-    el.textContent = km > 0 && sec > 0 ? `Pace ${fmtPace(sec, km)}` : '';
+    el.textContent = km > 0 && sec > 0 ? `${EX[form.type].speed ? 'Speed' : 'Pace'} ${fmtRate(form.type, sec, km)}` : '';
   } else {
     const sets = form.sets.map(v => parseInt(v, 10)).filter(n => n > 0);
     el.textContent = sets.length > 1 ? `Total ${fmtAmount(form.type, sum(sets))}` : '';
@@ -322,9 +326,10 @@ function viewStats() {
     const longest = list.reduce((a, b) => b.distance > a.distance ? b : a);
     const paced = list.filter(e => e.distance >= 1);
     const fastest = paced.length ? paced.reduce((a, b) => b.duration / b.distance < a.duration / a.distance ? b : a) : null;
-    h += stat('Longest run', `${fmtKm(longest.distance)} km`, fmtDay(longest.date))
-       + stat('Fastest pace', fastest ? fmtPace(fastest.duration, fastest.distance) : '–', fastest ? `${fmtKm(fastest.distance)} km · ${fmtDay(fastest.date)}` : '')
-       + stat('Total distance', `${fmtKm(sum(list.map(e => e.distance)))} km`, `${list.length} runs`)
+    const {noun, speed} = EX[statsType];
+    h += stat(`Longest ${noun}`, `${fmtKm(longest.distance)} km`, fmtDay(longest.date))
+       + stat(speed ? 'Fastest avg speed' : 'Fastest pace', fastest ? fmtRate(statsType, fastest.duration, fastest.distance) : '–', fastest ? `${fmtKm(fastest.distance)} km · ${fmtDay(fastest.date)}` : '')
+       + stat('Total distance', `${fmtKm(sum(list.map(e => e.distance)))} km`, `${list.length} ${noun}s`)
        + stat('Total time', fmtDur(sum(list.map(e => e.duration))));
   } else {
     let best = null;
@@ -389,7 +394,7 @@ function save() {
   if (prev.length) {
     if (data.sets && Math.max(...data.sets) > Math.max(...prev.flatMap(e => e.sets)))
       msg = EX[data.type].kind === 'secs' ? 'New longest hold! 🎉' : 'New best set! 🎉';
-    if (data.distance && data.distance > Math.max(...prev.map(e => e.distance))) msg = 'New longest run! 🎉';
+    if (data.distance && data.distance > Math.max(...prev.map(e => e.distance))) msg = `New longest ${EX[data.type].noun}! 🎉`;
   }
   if (form.id) {
     const i = entries.findIndex(e => e.id === form.id);
