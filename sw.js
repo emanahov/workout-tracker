@@ -1,6 +1,8 @@
 // Serve from cache first (works offline at anchor), refresh the cache in the background.
-const CACHE = 'workouts-v3';
-const ASSETS = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-512.png'];
+const CACHE = 'workouts-v4';
+const ASSETS = ['./', './index.html', './manifest.webmanifest', './apple-touch-icon.png', './icon-512.png',
+  './fonts/barlow-condensed-400.woff2', './fonts/barlow-condensed-500.woff2', './fonts/space-grotesk.woff2',
+  './fonts/ibm-plex-mono-400.woff2', './fonts/ibm-plex-mono-500.woff2', './fonts/plus-jakarta-sans.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
